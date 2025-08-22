@@ -22,11 +22,11 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/cloudhub-site:latest .
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/george:latest .
 
       - name: Push Docker Image
         run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/cloudhub-site:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/george:latest
 
       - name: Setup SSH
         run: |
@@ -39,12 +39,12 @@ jobs:
         run: |
           ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             # Stop & remove old container if running
-            docker stop cloudhub || true
-            docker rm cloudhub || true
+            docker stop george || true
+            docker rm george || true
 
             # Pull latest image from Docker Hub
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/cloudhub-site:latest
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/george:latest
 
             # Run container on port 80
-            docker run -d --name cloudhub -p 80:80 ${{ secrets.DOCKER_HUB_USERNAME }}/cloudhub-site:latest
+            docker run -d --name george -p 80:80 ${{ secrets.DOCKER_HUB_USERNAME }}/cloudhub-site:latest
           EOF
