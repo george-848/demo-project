@@ -21,11 +21,11 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/project:latest .
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/george:latest .
 
       - name: Push Docker Image
         run: |
-          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/project:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/george:latest
 
       - name: Setup SSH
         run: |
@@ -42,8 +42,8 @@ jobs:
             docker rm cloudhub || true
 
             # Pull latest image from Docker Hub
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/project:latest
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/george:latest
 
             # Run container on port 80
-            docker run -d --name cloudhub -p 80:80 ${{ secrets.DOCKER_HUB_USERNAME }}/project:latest
+            docker run -d --name george -p 80:80 ${{ secrets.DOCKER_HUB_USERNAME }}/project:latest
           EOF
