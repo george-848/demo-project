@@ -1,17 +1,31 @@
-name: CI/CD Deploy to EC2 (Nginx)
+name: Build, Push & Deploy Docker Container to EC2
 
 on:
   push:
     branches:
-      - main   # Trigger deployment when pushing to main branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/project:latest .
+
+      - name: Push Docker Image
+        run: |
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/project:latest
 
       - name: Setup SSH
         run: |
@@ -20,14 +34,16 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy index.html to EC2
+      - name: Deploy on EC2
         run: |
-          # Copy index.html to EC2
-          scp index.html ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/index.html
-          
-          # Move file into Nginx web root and restart Nginx
           ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            sudo mv /tmp/index.html /var/www/html/index.html
-            sudo chown www-data:www-data /var/www/html/index.html
-            sudo systemctl restart nginx
+            # Stop & remove old container if running
+            docker stop cloudhub || true
+            docker rm cloudhub || true
+
+            # Pull latest image from Docker Hub
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/project:latest
+
+            # Run container on port 80
+            docker run -d --name cloudhub -p 80:80 ${{ secrets.DOCKER_HUB_USERNAME }}/project:latest
           EOF
