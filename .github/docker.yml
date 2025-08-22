@@ -44,5 +44,5 @@ jobs:
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/george:latest
 
             # Run container on port 80
-            docker run -d --name george -p 80:80 ${{ secrets.DOCKER_HUB_USERNAME }}/cloudhub-site:latest
+            docker run -d -t --name george -p 80:80 ${{ secrets.DOCKER_HUB_USERNAME }}/cloudhub-site:latest
           EOF
